@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Input } from './ui/input';
+import { ScrollArea } from './ui/scroll-area';
 import {
   getProducts,
   updateStock,
@@ -12,7 +12,8 @@ import {
   deleteProduct,
   PurchaseStatus,
   type IProduct
-} from '@/lib/api-client';
+} from '../lib/api-client';
+import { EditProductForm } from './edit-product-form';
 
 interface ProductListProps {
   initialFilters?: {
@@ -29,6 +30,7 @@ export function ProductList({ initialFilters }: ProductListProps) {
     purchaseStatus?: PurchaseStatus;
     lowStock?: boolean;
   }>(initialFilters || {});
+  const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
 
   const fetchProducts = async () => {
     try {
@@ -126,13 +128,22 @@ export function ProductList({ initialFilters }: ProductListProps) {
                   <h3 className="font-bold">{product.productName}</h3>
                   <p className="text-sm text-gray-500">{product.stockDisplay}</p>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleDelete(product._id)}
-                >
-                  削除
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditingProduct(product)}
+                  >
+                    編集
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(product._id)}
+                  >
+                    削除
+                  </Button>
+                </div>
               </div>
 
               {product.image && (
@@ -198,6 +209,14 @@ export function ProductList({ initialFilters }: ProductListProps) {
           ))
         )}
       </div>
+
+      {editingProduct && (
+        <EditProductForm
+          product={editingProduct}
+          onClose={() => setEditingProduct(null)}
+          onUpdate={fetchProducts}
+        />
+      )}
     </div>
   );
 }

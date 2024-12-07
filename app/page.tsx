@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductList } from '@/components/product-list';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +9,7 @@ import { Card } from '@/components/ui/card';
 import { createProduct } from '@/lib/api-client';
 
 export default function Home() {
+  const searchParams = useSearchParams();
   const [showNewForm, setShowNewForm] = useState(false);
   const [newProduct, setNewProduct] = useState({
     productName: '',
@@ -16,6 +18,9 @@ export default function Home() {
     stockQuantity: 0,
     minimumStock: 0,
   });
+
+  const status = searchParams.get('status');
+  const lowStock = searchParams.get('lowStock') === 'true';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,10 +42,15 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen p-4">
-      <div className="max-w-4xl mx-auto">
+    <div className="h-full p-4 overflow-auto">
+      <div className="max-w-[1200px] mx-auto">
         <div className="mb-6 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">買い物管理</h1>
+          <h1 className="text-2xl font-bold">
+            {status === '要購入' ? '要購入商品' :
+             status === '注文済み' ? '注文済み商品' :
+             lowStock ? '在庫少商品' :
+             '商品一覧'}
+          </h1>
           <Button onClick={() => setShowNewForm(!showNewForm)}>
             {showNewForm ? '閉じる' : '新規商品追加'}
           </Button>
@@ -106,8 +116,8 @@ export default function Home() {
           </Card>
         )}
 
-        <ProductList />
+        <ProductList initialFilters={{ purchaseStatus: status as any, lowStock }} />
       </div>
-    </main>
+    </div>
   );
 }

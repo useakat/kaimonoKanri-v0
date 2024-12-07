@@ -1,35 +1,32 @@
-import type { Metadata } from 'next'
-import { Noto_Sans_JP } from 'next/font/google'
-import './globals.css'
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
+import type { Metadata } from "next";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
 
-const notoSansJP = Noto_Sans_JP({ 
-  subsets: ['latin'],
-  weight: ['400', '500', '700']
-})
+import "./globals.css";
 
 export const metadata: Metadata = {
-  title: '買うもの管理',
-  description: 'Shopping Management Application',
-}
+  title: "買い物管理",
+  description: "買い物管理アプリケーション",
+};
 
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="ja">
-      <body className={notoSansJP.className}>
-        <div className="min-h-screen bg-background">
-          <Header />
-          <div className="flex">
-            <Sidebar />
-            <main className="flex-1 p-4">{children}</main>
-          </div>
+      <body
+        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+      >
+        <div className="flex h-screen">
+          <Sidebar>
+            {children}
+          </Sidebar>
         </div>
       </body>
     </html>
-  )
+  );
 }

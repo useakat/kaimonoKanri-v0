@@ -127,6 +127,9 @@ export function ProductList({ initialFilters }: ProductListProps) {
                 <div>
                   <h3 className="font-bold">{product.productName}</h3>
                   <p className="text-sm text-gray-500">{product.stockDisplay}</p>
+                  {product.purchaseLocation && (
+                    <p className="text-sm text-gray-500">購入先: {product.purchaseLocation}</p>
+                  )}
                 </div>
                 <div className="flex gap-2">
                   <Button

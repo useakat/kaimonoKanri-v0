@@ -33,11 +33,24 @@ export function ProductList({ initialFilters, search = '' }: ProductListProps) {
   }>(initialFilters || {});
   const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
 
+  const sortProducts = (products: IProduct[]): IProduct[] => {
+    const statusOrder: { [key in PurchaseStatus]: number } = {
+      '要購入': 0,
+      '注文済み': 1,
+      '在庫あり': 2
+    };
+
+    return [...products].sort((a, b) => 
+      statusOrder[a.purchaseStatus] - statusOrder[b.purchaseStatus]
+    );
+  };
+
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const data = await getProducts({ ...filter, search });
-      setProducts(data);
+      const sortedData = sortProducts(data);
+      setProducts(sortedData);
     } catch (error) {
       console.error('Failed to fetch products:', error);
     } finally {

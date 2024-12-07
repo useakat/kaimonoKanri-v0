@@ -7,7 +7,6 @@ import { ScrollArea } from './ui/scroll-area';
 import {
   getProducts,
   updateStock,
-  updatePurchaseStatus,
   deleteProduct,
   PurchaseStatus,
   PurchaseLocation,
@@ -65,15 +64,6 @@ export function ProductList({ initialFilters, search = '' }: ProductListProps) {
     }
   };
 
-  const handleUpdateStatus = async (id: string, status: PurchaseStatus) => {
-    try {
-      await updatePurchaseStatus(id, status);
-      fetchProducts();
-    } catch (error) {
-      console.error('Failed to update status:', error);
-    }
-  };
-
   const handleDelete = async (id: string) => {
     if (!confirm('本当にこの商品を削除しますか？')) return;
     try {
@@ -81,6 +71,19 @@ export function ProductList({ initialFilters, search = '' }: ProductListProps) {
       fetchProducts();
     } catch (error) {
       console.error('Failed to delete product:', error);
+    }
+  };
+
+  const getStatusColor = (status: PurchaseStatus) => {
+    switch (status) {
+      case '在庫あり':
+        return 'bg-green-100 text-green-800';
+      case '要購入':
+        return 'bg-red-100 text-red-800';
+      case '注文済み':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -121,6 +124,9 @@ export function ProductList({ initialFilters, search = '' }: ProductListProps) {
                   {product.purchaseLocation && (
                     <p className="text-sm text-gray-500">購入先: {product.purchaseLocation}</p>
                   )}
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(product.purchaseStatus)}`}>
+                    {product.purchaseStatus}
+                  </span>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -147,30 +153,6 @@ export function ProductList({ initialFilters, search = '' }: ProductListProps) {
                   className="w-full h-40 object-cover rounded-md"
                 />
               )}
-
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant={product.purchaseStatus === '在庫あり' ? 'default' : 'outline'}
-                  onClick={() => handleUpdateStatus(product._id, '在庫あり')}
-                >
-                  在庫あり
-                </Button>
-                <Button
-                  size="sm"
-                  variant={product.purchaseStatus === '要購入' ? 'default' : 'outline'}
-                  onClick={() => handleUpdateStatus(product._id, '要購入')}
-                >
-                  要購入
-                </Button>
-                <Button
-                  size="sm"
-                  variant={product.purchaseStatus === '注文済み' ? 'default' : 'outline'}
-                  onClick={() => handleUpdateStatus(product._id, '注文済み')}
-                >
-                  注文済み
-                </Button>
-              </div>
 
               {product.orderUrl && (
                 <Button

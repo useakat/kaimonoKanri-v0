@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { ProductList } from '@/components/product-list';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { createProduct } from '@/lib/api-client';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { ProductList } from '../components/product-list';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
+import { Card } from '../components/ui/card';
+import { createProduct, type PurchaseLocation } from '../lib/api-client';
 
 export default function Home() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const [showNewForm, setShowNewForm] = useState(false);
+  const [search, setSearch] = useState('');
   const [newProduct, setNewProduct] = useState({
     productName: '',
     orderUrl: '',
@@ -21,6 +23,7 @@ export default function Home() {
 
   const status = searchParams.get('status');
   const lowStock = searchParams.get('lowStock') === 'true';
+  const location = searchParams.get('location') as PurchaseLocation | null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +44,24 @@ export default function Home() {
     }
   };
 
+  const updateFilter = (key: string, value: string | null) => {
+    const current = new URLSearchParams(Array.from(searchParams.entries()));
+    
+    if (value === null) {
+      current.delete(key);
+    } else {
+      current.set(key, value);
+    }
+    
+    const search = current.toString();
+    const query = search ? `?${search}` : '';
+    router.push(`${window.location.pathname}${query}`);
+  };
+
+  const toggleLocation = (loc: PurchaseLocation) => {
+    updateFilter('location', location === loc ? null : loc);
+  };
+
   return (
     <div className="h-full p-4 overflow-auto">
       <div className="max-w-[1200px] mx-auto">
@@ -49,10 +70,62 @@ export default function Home() {
             {status === '要購入' ? '要購入商品' :
              status === '注文済み' ? '注文済み商品' :
              lowStock ? '在庫少商品' :
+             location === '生協' ? '生協で購入する商品' :
+             location === '週末買い物' ? '週末買い物リスト' :
+             location === 'ネット' ? 'ネットで購入する商品' :
              '商品一覧'}
           </h1>
           <Button onClick={() => setShowNewForm(!showNewForm)}>
             {showNewForm ? '閉じる' : '新規商品追加'}
+          </Button>
+        </div>
+
+        <div className="mb-4">
+          <Input
+            type="search"
+            placeholder="商品を検索..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="max-w-[300px]"
+          />
+        </div>
+
+        <div className="mb-6 flex flex-wrap gap-2">
+          <Button
+            variant={status === '要購入' ? "default" : "outline"}
+            onClick={() => updateFilter('status', status === '要購入' ? null : '要購入')}
+            size="sm"
+          >
+            要購入のみ
+          </Button>
+          <Button
+            variant={lowStock ? "default" : "outline"}
+            onClick={() => updateFilter('lowStock', lowStock ? null : 'true')}
+            size="sm"
+          >
+            在庫少
+          </Button>
+          <div className="h-6 w-px bg-gray-200" />
+          <Button
+            variant={location === '生協' ? "default" : "outline"}
+            onClick={() => toggleLocation('生協')}
+            size="sm"
+          >
+            生協
+          </Button>
+          <Button
+            variant={location === '週末買い物' ? "default" : "outline"}
+            onClick={() => toggleLocation('週末買い物')}
+            size="sm"
+          >
+            週末買い物
+          </Button>
+          <Button
+            variant={location === 'ネット' ? "default" : "outline"}
+            onClick={() => toggleLocation('ネット')}
+            size="sm"
+          >
+            ネット
           </Button>
         </div>
 
@@ -116,7 +189,14 @@ export default function Home() {
           </Card>
         )}
 
-        <ProductList initialFilters={{ purchaseStatus: status as any, lowStock }} />
+        <ProductList
+          initialFilters={{
+            purchaseStatus: status as any,
+            purchaseLocation: location as any,
+            lowStock
+          }}
+          search={search}
+        />
       </div>
     </div>
   );

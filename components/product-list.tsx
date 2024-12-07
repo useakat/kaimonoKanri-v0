@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
-import { Input } from './ui/input';
 import { ScrollArea } from './ui/scroll-area';
 import {
   getProducts,
@@ -11,6 +10,7 @@ import {
   updatePurchaseStatus,
   deleteProduct,
   PurchaseStatus,
+  PurchaseLocation,
   type IProduct
 } from '../lib/api-client';
 import { EditProductForm } from './edit-product-form';
@@ -18,16 +18,18 @@ import { EditProductForm } from './edit-product-form';
 interface ProductListProps {
   initialFilters?: {
     purchaseStatus?: PurchaseStatus;
+    purchaseLocation?: PurchaseLocation;
     lowStock?: boolean;
   };
+  search?: string;
 }
 
-export function ProductList({ initialFilters }: ProductListProps) {
+export function ProductList({ initialFilters, search = '' }: ProductListProps) {
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<{
     purchaseStatus?: PurchaseStatus;
+    purchaseLocation?: PurchaseLocation;
     lowStock?: boolean;
   }>(initialFilters || {});
   const [editingProduct, setEditingProduct] = useState<IProduct | null>(null);
@@ -84,37 +86,6 @@ export function ProductList({ initialFilters }: ProductListProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <Input
-          type="search"
-          placeholder="商品を検索..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="max-w-[200px]"
-        />
-        {!initialFilters && (
-          <>
-            <Button
-              variant={filter.lowStock ? "default" : "outline"}
-              onClick={() => setFilter(f => ({ ...f, lowStock: !f.lowStock }))}
-              size="sm"
-            >
-              在庫少
-            </Button>
-            <Button
-              variant={filter.purchaseStatus === '要購入' ? "default" : "outline"}
-              onClick={() => setFilter(f => ({
-                ...f,
-                purchaseStatus: f.purchaseStatus === '要購入' ? undefined : '要購入'
-              }))}
-              size="sm"
-            >
-              要購入のみ
-            </Button>
-          </>
-        )}
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
         {loading ? (
           <div className="col-span-full text-center py-8">読み込み中...</div>
@@ -124,9 +95,29 @@ export function ProductList({ initialFilters }: ProductListProps) {
           products.map((product) => (
             <Card key={product._id} className="p-4 space-y-4">
               <div className="flex justify-between items-start">
-                <div>
+                <div className="space-y-1">
                   <h3 className="font-bold">{product.productName}</h3>
-                  <p className="text-sm text-gray-500">{product.stockDisplay}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm text-gray-500">{product.stockDisplay}</p>
+                    <div className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUpdateStock(product._id, 'decrement')}
+                        className="h-6 w-6 p-0 text-lg font-medium"
+                      >
+                        -
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleUpdateStock(product._id, 'increment')}
+                        className="h-6 w-6 p-0 text-lg font-medium"
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
                   {product.purchaseLocation && (
                     <p className="text-sm text-gray-500">購入先: {product.purchaseLocation}</p>
                   )}
@@ -156,23 +147,6 @@ export function ProductList({ initialFilters }: ProductListProps) {
                   className="w-full h-40 object-cover rounded-md"
                 />
               )}
-
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleUpdateStock(product._id, 'decrement')}
-                >
-                  -1
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleUpdateStock(product._id, 'increment')}
-                >
-                  +1
-                </Button>
-              </div>
 
               <div className="flex gap-2">
                 <Button

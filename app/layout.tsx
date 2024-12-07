@@ -1,10 +1,13 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Noto_Sans_JP } from 'next/font/google'
 import './globals.css'
 import { Header } from '@/components/header'
 import { Sidebar } from '@/components/sidebar'
 
-const inter = Inter({ subsets: ['latin', 'japanese'] })
+const notoSansJP = Noto_Sans_JP({ 
+  subsets: ['latin'],
+  weight: ['400', '500', '700']
+})
 
 export const metadata: Metadata = {
   title: '買うもの管理',
@@ -18,7 +21,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={inter.className}>
+      <body className={notoSansJP.className}>
         <div className="min-h-screen bg-background">
           <Header />
           <div className="flex">
@@ -30,4 +33,3 @@ export default function RootLayout({
     </html>
   )
 }
-
